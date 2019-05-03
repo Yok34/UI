@@ -30,7 +30,11 @@ namespace GunShop
         /// Оружие
         /// </summary>
         public List<Specifications> Guns { get; set; }
-
+        
+        /// <summary>
+        /// Контакты
+        /// </summary>
+        public string Contacts { get; set; }
        
     }
 

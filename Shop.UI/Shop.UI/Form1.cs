@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 using GunShop;
 
 namespace Shop.UI
@@ -83,6 +86,61 @@ namespace Shop.UI
                     listBox1.Items.Insert(index, item);
                 }
             }
+
+        }
+
+      
+        private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var sfd = new SaveFileDialog() {Filter = "Магазин|*.gunshop" };
+            if (sfd.ShowDialog(this) != DialogResult.OK)
+                return;
+
+            var shop = new GunShop.Shop()
+            {
+                Name = textBox1.Text,
+                Guns = listBox1.Items.OfType<Specifications>().ToList(),
+                Address = textBox2.Text,
+                Contacts = textBox3.Text,
+            };
+            var stream = new MemoryStream();
+            pictureBox1.Image.Save(stream, ImageFormat.Jpeg);
+            shop.Photo = stream.ToArray();
+
+            var xs = new XmlSerializer(typeof(GunShop.Shop));
+            var file = File.Create(sfd.FileName);
+            xs.Serialize(file, shop);
+            file.Close();
+
+
+        }
+
+
+        private void загрузитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var ofd = new OpenFileDialog() { Filter = "Магазин|*.gunshop" };
+
+            if (ofd.ShowDialog(this) != DialogResult.OK)
+                return;
+            var xmlser = new XmlSerializer(typeof(GunShop.Shop));
+            var file = File.OpenRead(ofd.FileName);
+            var shop = (GunShop.Shop)xmlser.Deserialize(file);
+            file.Close();
+
+            textBox1.Text = shop.Name;
+            textBox2.Text = shop.Address;
+            textBox3.Text = shop.Contacts;
+
+            var ms = new MemoryStream(shop.Photo);
+            pictureBox1.Image = Image.FromStream(ms);
+
+            listBox1.Items.Clear();
+
+            foreach (var catalog in shop.Guns)
+            {
+                listBox1.Items.Add(catalog);
+            }
+
 
         }
     }
